@@ -66,7 +66,7 @@ const verifyOTP = async (requestId: string, phoneNumber: any, token: string, dom
                 }
             });
 
-        if(!response) return result;
+        if (!response) return result;
 
         const responseJSON = await response.json();
 
@@ -147,15 +147,15 @@ const sendOTP = async (phoneNumber: any, domain = 'noneu'): Promise<any> => {
             },
             body: JSON.stringify(data)
         };
-        
+
         let result: { status: boolean, message: string, requestId?: string, errorData?: string | {}, domain?: string } = {
             status: false,
             message: ''
         };
-        
+
         let wrongDomain = false;
         let newDomain = domain;
-        
+
         const response = await fetch(`https://account-${domain}.truecaller.com/v2/sendOnboardingOtp`, options)
             .catch(error => {
                 console.log('Error Message:', error.message || '');
@@ -183,8 +183,8 @@ const sendOTP = async (phoneNumber: any, domain = 'noneu'): Promise<any> => {
         }
 
         result.domain = newDomain;
-        
-        if(!response) return result;
+
+        if (!response) return result;
 
         const responseJSON = await response?.json();
 
@@ -226,15 +226,17 @@ const sendOTP = async (phoneNumber: any, domain = 'noneu'): Promise<any> => {
 }
 
 const searchNumber = async (phoneNumber: any, installationId: string, domain = 'noneu'): Promise<any> => {
-    try {
-        let result: { status: boolean, message: string, data: any, errorData?: string | {} } = {
-            status: false,
-            message: '',
-            data: []
-        };
+    let result: { status: boolean, message: string, data: any, errorData?: string | {} } = {
+        status: false,
+        message: '',
+        data: []
+    };
 
-        let wrongDomain = false;
-        let newDomain = domain;
+    let wrongDomain = false;
+    let newDomain = domain;
+
+    try {
+
 
         const params = new URLSearchParams({
             q: phoneNumber.number,
@@ -245,56 +247,55 @@ const searchNumber = async (phoneNumber: any, installationId: string, domain = '
             encoding: "json",
         }).toString();
 
-        const res = await fetch(`https://search5-${domain}.truecaller.com/v2/search?` + params , {
+        const res = await fetch(`https://search5-${domain}.truecaller.com/v2/search?` + params, {
             headers: {
                 "content-type": "application/json; charset=UTF-8",
                 "accept-encoding": "gzip",
                 "user-agent": "Truecaller/11.75.5 (Android;10)",
                 Authorization: `Bearer ${installationId}`,
             }
-        })
-            .catch((error) => {
-                console.log('Error message:', error.message);
-                result.message = error.message;
-                if (error.response) {
-                    console.log('Response error data:', error.response.data);
-                    result.errorData = error.response.data;
+        });
 
-                    if (error.response.data.status && error.response.data.status == 45101) {
-                        console.log('Wrong domain');
-                        wrongDomain = true;
-                        newDomain = domain === 'noneu' ? 'eu' : 'noneu';
-                    }
-                }
-                else if (error.request) {
-                    console.log('Request error data:', error.request.data);
-                    result.errorData = error.request.data;
-                }
+        console.log(res);
+        if (!res) return result;
 
-            });
+        const resText = await res.text().catch(error => { console.log(error); }) as string;
 
-        if (wrongDomain) {
-            await sleep(2000);
-            return await searchNumber(phoneNumber, installationId, newDomain);
+        if (!resText) {
+            result.message = 'Empty response';
+            return result;
         }
 
-        if(!res) return result;
+        try {
+            const resJSON = JSON.parse(resText);
 
-        const resJSON = await res.json();
+            result.status = true;
+            result.data = resJSON;
 
-        if (!resJSON) return result;
-
-        result.status = true;
-        result.data = resJSON;
-
-        return result;
+            return result;
+        }
+        catch (error) {
+            result.message = resText;
+            return result;
+        }
     }
-    catch (error) {
-        console.log(error);
-        return {
-            status: false,
-            message: error instanceof Error ? error.message : error
+    catch (error: any) {
+        console.log('Error message:', error.message);
+        result.message = error.message || error;
+        if (error.response) {
+            console.log('Response error data:', error.response.data);
+            result.errorData = error.response.data;
+
+            if (error.response.data.status && error.response.data.status == 45101) {
+                console.log('Wrong domain');
+            }
         }
+        else if (error.request) {
+            console.log('Request error data:', error.request.data);
+            result.errorData = error.request.data;
+        }
+        
+        return result;
     }
 }
 
@@ -350,7 +351,7 @@ const bulkSearch = async (phoneNumbers: string, regionCode: string, installation
             return await bulkSearch(phoneNumbers, regionCode, installationId, newDomain);
         }
 
-        if(!res) return result;
+        if (!res) return result;
 
         const resJSON = await res.json();
 
