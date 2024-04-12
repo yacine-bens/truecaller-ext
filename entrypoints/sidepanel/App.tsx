@@ -11,6 +11,7 @@ import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/material.css';
 import { getUserInfo, searchNumber, sendOTP, verifyOTP } from '@/entrypoints/sidepanel/truecaller/truecaller';
+import { parsePhoneNumber } from 'awesome-phonenumber';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -141,7 +142,7 @@ function App() {
     const phoneNumber = {
       regionCode: phone.country.countryCode.toUpperCase(),
       countryCode: parseInt(phone.country.dialCode),
-      number: phone.value.slice(phone.country.dialCode.length)
+      number: parsePhoneNumber(phone.value, { regionCode: phone.country.countryCode.toUpperCase() }).number?.significant
     };
 
     showAlert('info', 'Searching...', null, 'circular-progress');
@@ -159,12 +160,43 @@ function App() {
   };
 
   useEffect(() => {
+    chrome.storage.session.onChanged.addListener(changes => {
+      if (changes.number && changes.number.newValue) {
+        // get only numeric value
+        let newValue = changes.number.newValue.replace(/\D/g, '');
+        const pn = parsePhoneNumber(newValue, { regionCode: 'DZ' });
+        if (!newValue || !pn.valid) {
+          showAlert('warning', 'Invalid phone number', 3000);
+          return;
+        }
+        setPhone({ value: pn.number.e164, country: { countryCode: 'dz', dialCode: '213' } });
+      }
+    });
+
     (async () => {
       const { installationPhone: installationPhoneStorage, installationId: installationIdStorage } = await chrome.storage.local.get(['installationPhone', 'installationId']);
       setInstallationPhone(installationPhoneStorage || {});
       setInstallationId(installationIdStorage || '');
+
+      let { number } = await chrome.storage.session.get('number');
+      if(!number) return;
+
+      number = number.replace(/\D/g, '');
+      const pn = parsePhoneNumber(number, { regionCode: 'DZ' });
+      if (!number || !pn.valid) {
+        showAlert('warning', 'Invalid phone number', 3000);
+        return;
+      }
+
+      setPhone({ value: pn.number.e164, country: { countryCode: 'dz', dialCode: '213'} });
     })();
   }, []);
+
+  useEffect(() => {
+    if (!phone.value) return;
+    console.log(phone);
+    chrome.storage.session.remove('number');
+  }, [phone]);
 
   return (
     <Box>
