@@ -261,7 +261,7 @@ function App() {
               <TextField fullWidth autoComplete='off' variant='outlined' label='Request ID' onChange={(e) => setRequestId(e.target.value)} placeholder='Enter Request ID' value={requestId} disabled />
             </Grid> */}
             <Grid xs={2}>
-              <TextField ref={otpInputRef} fullWidth autoComplete='off' variant='outlined' label='OTP' onChange={(e) => setOTP(e.target.value)} placeholder='Please Enter OTP' value={OTP} disabled={!requestId} />
+              <TextField inputRef={otpInputRef} fullWidth autoComplete='off' variant='outlined' label='OTP' onChange={(e) => setOTP(e.target.value)} placeholder='Please Enter OTP' value={OTP} disabled={!requestId} />
             </Grid>
             <Grid xs={1}>
               <Button
