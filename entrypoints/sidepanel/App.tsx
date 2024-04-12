@@ -8,6 +8,7 @@ import WcIcon from '@mui/icons-material/Wc';
 import InfoIcon from '@mui/icons-material/Info';
 import PhoneIcon from '@mui/icons-material/Phone';
 import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
+import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/material.css';
 import { getUserInfo, searchNumber, sendOTP, verifyOTP } from '@/entrypoints/sidepanel/truecaller/truecaller';
@@ -179,7 +180,7 @@ function App() {
       setInstallationId(installationIdStorage || '');
 
       let { number } = await chrome.storage.session.get('number');
-      if(!number) return;
+      if (!number) return;
 
       number = number.replace(/\D/g, '');
       const pn = parsePhoneNumber(number, { regionCode: 'DZ' });
@@ -188,13 +189,12 @@ function App() {
         return;
       }
 
-      setPhone({ value: pn.number.e164, country: { countryCode: 'dz', dialCode: '213'} });
+      setPhone({ value: pn.number.e164, country: { countryCode: 'dz', dialCode: '213' } });
     })();
   }, []);
 
   useEffect(() => {
     if (!phone.value) return;
-    console.log(phone);
     chrome.storage.session.remove('number');
   }, [phone]);
 
@@ -241,35 +241,43 @@ function App() {
                   <ListItem disablePadding>
                     <ListItemAvatar>
                       <Avatar>
+                        <LeaderboardIcon />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText secondary="Score" primary={userInfo.score} />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemAvatar>
+                      <Avatar>
+                        <PhoneIcon />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText secondary="Phones" primary={userInfo.phones.length && userInfo.phones.map((p: any) => p.nationalFormat).join(' | ')} />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemAvatar>
+                      <Avatar>
+                        <AlternateEmailIcon />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText secondary="Emails" primary={userInfo.internetAddresses.length ? userInfo.internetAddresses.map((a: any) => a.id).join(' | ') : 'N/A'} />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemAvatar>
+                      <Avatar>
                         <WcIcon />
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText secondary="Gender" primary={userInfo.gender} />
                   </ListItem>
-                  {!!userInfo.about && <ListItem disablePadding>
+                  <ListItem disablePadding>
                     <ListItemAvatar>
                       <Avatar>
                         <InfoIcon />
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText secondary="About" primary={userInfo.about} />
-                  </ListItem>}
-                  {!!userInfo.internetAddresses.length && <ListItem disablePadding>
-                    <ListItemAvatar>
-                      <Avatar>
-                        <AlternateEmailIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText secondary="Emails" primary={userInfo.internetAddresses.map((a: any) => a.id).join(' | ')} />
-                  </ListItem>}
-                  {userInfo.phones.length > 1 && <ListItem>
-                    <ListItemAvatar>
-                      <Avatar>
-                        <PhoneIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText secondary="Phones" primary={userInfo.phones.map((a: any) => a.id).join(' | ')} />
-                  </ListItem>}
+                  </ListItem>
                 </List>
               }
             </Grid>

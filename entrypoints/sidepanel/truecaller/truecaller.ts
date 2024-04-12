@@ -14,11 +14,12 @@ const generateRandomString = (length: number) => {
 const getUserInfo = (userData: Record<string, any>) => {
     const info = {
         name: userData['name'] || 'Unknown',
-        gender: userData['gender'] || 'Unknown',
-        about: userData['about'] || '',
+        gender: userData['gender'] || 'N/A',
+        about: userData['about'] || 'N/A',
         image: userData['image'] || null,
         internetAddresses: userData['internetAddresses'] || [],
-        phones: userData['phones'] || []
+        phones: userData['phones'] || [],
+        score: userData['score'] || 'N/A',
     }
 
     return info;
