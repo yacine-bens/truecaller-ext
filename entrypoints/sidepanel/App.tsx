@@ -1,6 +1,6 @@
 import Grid from '@mui/material/Unstable_Grid2/Grid2';
 import { useEffect, useRef, useState } from 'react';
-import { Box, Button, SlideProps, Slide, Tab, Tabs, TextField, Snackbar, Alert, CircularProgress, List, ListItem, ListItemAvatar, Avatar, ListItemText } from '@mui/material';
+import { Box, Button, SlideProps, Slide, Tab, Tabs, TextField, Snackbar, Alert, CircularProgress, List, ListItem, ListItemAvatar, Avatar, ListItemText, Skeleton } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SearchIcon from '@mui/icons-material/Search';
 import SaveIcon from '@mui/icons-material/Save';
@@ -52,6 +52,7 @@ function App() {
   const [requestId, setRequestId] = useState('');
 
   const [userInfo, setUserInfo] = useState<Record<string, any>>({});
+  const [loading, setLoading] = useState(false);
 
   const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
   const [snackbarAlert, setSnackbarAlert] = useState({} as any);
@@ -147,8 +148,10 @@ function App() {
     };
 
     showAlert('info', 'Searching...', null, 'circular-progress');
+    setLoading(true);
     const response = await searchNumber(phoneNumber, installationId);
     console.log(response);
+    setLoading(false);
 
     if (!response.status || !response.data.data) {
       showAlert('error', response.message || response.data.message);
@@ -226,59 +229,72 @@ function App() {
               <Button variant='contained' fullWidth onClick={handleSearch} sx={{ padding: '.75rem' }} startIcon={<SearchIcon />}>Search</Button>
             </Grid>
             <Grid xs={1}>
-              {Object.keys(userInfo).length > 0 &&
-                <List disablePadding>
-                  <ListItem disablePadding>
-                    <ListItemAvatar>
-                      {!!userInfo.image ? <Avatar alt={userInfo.name} src={userInfo.image} /> :
+              {loading ?
+                (<List disablePadding>
+                  {[...Array(6)].map((_, i) => (
+                    <ListItem key={i} disablePadding >
+                      <ListItemAvatar>
+                        <Skeleton variant='circular' animation='wave'>
+                          <Avatar />
+                        </Skeleton>
+                      </ListItemAvatar>
+                      <ListItemText primary={<Skeleton animation='wave' width={150} />} secondary={<Skeleton width={100} height={20} />} />
+                    </ListItem>
+                  ))}
+                </List>)
+                : (Object.keys(userInfo).length > 0 &&
+                  <List disablePadding>
+                    <ListItem disablePadding>
+                      <ListItemAvatar>
+                        {!!userInfo.image ? <Avatar alt={userInfo.name} src={userInfo.image} /> :
+                          <Avatar>
+                            {userInfo.name.split(' ').map((n: string) => n[0].toUpperCase()).join('')}
+                          </Avatar>
+                        }
+                      </ListItemAvatar>
+                      <ListItemText secondary="Name" primary={userInfo.name} />
+                    </ListItem>
+                    <ListItem disablePadding>
+                      <ListItemAvatar>
                         <Avatar>
-                          {userInfo.name.split(' ').map((n: string) => n[0].toUpperCase()).join('')}
+                          <LeaderboardIcon />
                         </Avatar>
-                      }
-                    </ListItemAvatar>
-                    <ListItemText secondary="Name" primary={userInfo.name} />
-                  </ListItem>
-                  <ListItem disablePadding>
-                    <ListItemAvatar>
-                      <Avatar>
-                        <LeaderboardIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText secondary="Score" primary={userInfo.score} />
-                  </ListItem>
-                  <ListItem disablePadding>
-                    <ListItemAvatar>
-                      <Avatar>
-                        <PhoneIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText secondary="Phones" primary={userInfo.phones.length && userInfo.phones.map((p: any) => p.nationalFormat).join(' | ')} />
-                  </ListItem>
-                  <ListItem disablePadding>
-                    <ListItemAvatar>
-                      <Avatar>
-                        <AlternateEmailIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText secondary="Emails" primary={userInfo.internetAddresses.length ? userInfo.internetAddresses.map((a: any) => a.id).join(' | ') : 'N/A'} />
-                  </ListItem>
-                  <ListItem disablePadding>
-                    <ListItemAvatar>
-                      <Avatar>
-                        <WcIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText secondary="Gender" primary={userInfo.gender} />
-                  </ListItem>
-                  <ListItem disablePadding>
-                    <ListItemAvatar>
-                      <Avatar>
-                        <InfoIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText secondary="About" primary={userInfo.about} />
-                  </ListItem>
-                </List>
+                      </ListItemAvatar>
+                      <ListItemText secondary="Score" primary={userInfo.score} />
+                    </ListItem>
+                    <ListItem disablePadding>
+                      <ListItemAvatar>
+                        <Avatar>
+                          <PhoneIcon />
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText secondary="Phones" primary={userInfo.phones.length && userInfo.phones.map((p: any) => p.nationalFormat).join(' | ')} />
+                    </ListItem>
+                    <ListItem disablePadding>
+                      <ListItemAvatar>
+                        <Avatar>
+                          <AlternateEmailIcon />
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText secondary="Emails" primary={userInfo.internetAddresses.length ? userInfo.internetAddresses.map((a: any) => a.id).join(' | ') : 'N/A'} />
+                    </ListItem>
+                    <ListItem disablePadding>
+                      <ListItemAvatar>
+                        <Avatar>
+                          <WcIcon />
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText secondary="Gender" primary={userInfo.gender} />
+                    </ListItem>
+                    <ListItem disablePadding>
+                      <ListItemAvatar>
+                        <Avatar>
+                          <InfoIcon />
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText secondary="About" primary={userInfo.about} />
+                    </ListItem>
+                  </List>)
               }
             </Grid>
           </Grid>
