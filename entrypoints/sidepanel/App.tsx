@@ -141,6 +141,11 @@ function App() {
       return;
     }
 
+    if (!phone.value || !phone.country || !phone.country.countryCode || !phone.country.dialCode || !parsePhoneNumber(phone.value, { regionCode: phone.country.countryCode.toUpperCase() }).valid) {
+      showAlert('warning', 'Invalid phone number');
+      return;
+    }
+
     const phoneNumber = {
       regionCode: phone.country.countryCode.toUpperCase(),
       countryCode: parseInt(phone.country.dialCode),
